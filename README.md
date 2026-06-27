@@ -13,13 +13,58 @@ pip install -r requirements.txt
 ## Environment
 
 Create a local `.env` file if your shell or process manager loads env files. Do not commit secrets.
+Use `.env.example` as the template.
 
 | Key | Default | Purpose |
 | --- | --- | --- |
 | `APP_NAME` | `Lumora API` | FastAPI title. |
 | `APP_ENV` | `development` | Runtime environment label. |
-| `DATABASE_URL` | `postgresql+psycopg://lumora:lumora@localhost:5432/lumora` | PostgreSQL connection string. |
+| `DATABASE_URL` | `postgresql+psycopg://lumora:lumora@localhost:5432/lumora` | PostgreSQL connection string. Use the Supabase URL in local `.env`. |
 | `CORS_ORIGINS` | `http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173` | Comma-separated allowed origins for local/web development. |
+
+### Supabase Database
+
+Lumora currently uses PostgreSQL via SQLAlchemy and `psycopg`, so Supabase works without changing the database driver.
+
+1. Open Supabase Dashboard -> Project Settings -> Database -> Connection string.
+2. Copy either the direct connection string or session pooler string.
+3. Convert the scheme for SQLAlchemy/psycopg:
+
+```text
+postgresql://...
+```
+
+to:
+
+```text
+postgresql+psycopg://...
+```
+
+4. Save it in local `.env` as `DATABASE_URL`.
+
+If the database password contains special characters, URL-encode them before saving the URL.
+
+| Character | Encoded |
+| --- | --- |
+| `@` | `%40` |
+| `#` | `%23` |
+| `/` | `%2F` |
+| `?` | `%3F` |
+| `%` | `%25` |
+
+Example direct connection:
+
+```bash
+DATABASE_URL="postgresql+psycopg://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres"
+```
+
+Example session pooler connection:
+
+```bash
+DATABASE_URL="postgresql+psycopg://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres"
+```
+
+For local development, direct connection is fine. For hosted runtimes, prefer Supabase pooler when connection limits matter.
 
 ## Run
 
