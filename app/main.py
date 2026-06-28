@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
+from app.api.journeys import router as journeys_router
 from app.core.config import get_settings
 from app.core.errors import api_error
 
@@ -20,6 +21,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(journeys_router)
 
 
 @app.exception_handler(HTTPException)
