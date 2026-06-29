@@ -42,6 +42,8 @@ class FocusSession(Base):
     scheduled_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     scheduled_time: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)
     status: Mapped[str] = mapped_column(String(20), index=True, nullable=False, default="todo")
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    skipped_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), server_default=func.now(), nullable=False
     )
