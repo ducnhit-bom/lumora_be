@@ -2,7 +2,7 @@ from datetime import date, datetime, timezone
 from typing import Optional
 from uuid import uuid4
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -26,6 +26,7 @@ class WeeklyJourney(Base):
     )
 
     sessions: Mapped[list["FocusSession"]] = relationship(back_populates="journey", cascade="all, delete-orphan")
+    reflections: Mapped[list["Reflection"]] = relationship(back_populates="journey", cascade="all, delete-orphan")
 
 
 class FocusSession(Base):
@@ -49,3 +50,22 @@ class FocusSession(Base):
     )
 
     journey: Mapped[WeeklyJourney] = relationship(back_populates="sessions")
+    reflection: Mapped[Optional["Reflection"]] = relationship(back_populates="session")
+
+
+class Reflection(Base):
+    __tablename__ = "reflections"
+    __table_args__ = (UniqueConstraint("session_id", name="uq_reflections_session_id"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_id)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
+    journey_id: Mapped[str] = mapped_column(ForeignKey("weekly_journeys.id"), index=True, nullable=False)
+    session_id: Mapped[str] = mapped_column(ForeignKey("focus_sessions.id"), index=True, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    mood: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), server_default=func.now(), nullable=False
+    )
+
+    journey: Mapped[WeeklyJourney] = relationship(back_populates="reflections")
+    session: Mapped[FocusSession] = relationship(back_populates="reflection")

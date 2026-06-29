@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.api.auth import get_current_user
 from app.core.database import get_db
 from app.core.errors import api_error
-from app.models.journey import FocusSession, WeeklyJourney
+from app.models.journey import FocusSession, Reflection, WeeklyJourney
 from app.models.user import User
 
 router = APIRouter()
@@ -118,7 +118,8 @@ def complete_session(session_id: str, user: User = Depends(get_current_user), db
         _raise("invalid_state", "Only scheduled sessions can be completed.", status.HTTP_400_BAD_REQUEST)
     db.commit()
     db.refresh(session)
-    return CompleteResponse(sessionId=session.id, status=session.status, completedAt=session.completed_at, openReflection=True)
+    has_reflection = db.scalar(select(Reflection.id).where(Reflection.session_id == session.id)) is not None
+    return CompleteResponse(sessionId=session.id, status=session.status, completedAt=session.completed_at, openReflection=not has_reflection)
 
 
 @router.post("/sessions/{session_id}/undo-complete", response_model=UndoCompleteResponse)

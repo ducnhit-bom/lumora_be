@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
 from app.api.journeys import router as journeys_router
+from app.api.reflections import router as reflections_router
 from app.api.sessions import router as sessions_router
 from app.core.config import get_settings
 from app.core.errors import api_error
@@ -23,6 +24,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(journeys_router)
+app.include_router(reflections_router)
 app.include_router(sessions_router)
 
 
