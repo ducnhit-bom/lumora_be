@@ -8,6 +8,7 @@ from app.api.journeys import router as journeys_router
 from app.api.reflections import router as reflections_router
 from app.api.reviews import router as reviews_router
 from app.api.sessions import router as sessions_router
+from app.api.settings import router as settings_router
 from app.core.config import get_settings
 from app.core.errors import api_error
 
@@ -27,6 +28,7 @@ app.include_router(auth_router)
 app.include_router(journeys_router)
 app.include_router(reflections_router)
 app.include_router(reviews_router)
+app.include_router(settings_router)
 app.include_router(sessions_router)
 
 
