@@ -22,6 +22,7 @@ DEFAULT_CORS_ORIGINS = [
 class Settings:
     app_name: str = field(default_factory=lambda: os.getenv("APP_NAME", "Lumora API"))
     environment: str = field(default_factory=lambda: os.getenv("APP_ENV", "development"))
+    log_level: str = field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))
     database_url: str = field(
         default_factory=lambda: os.getenv(
             "DATABASE_URL",

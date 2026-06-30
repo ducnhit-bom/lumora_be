@@ -1,3 +1,6 @@
+import logging
+import time
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -13,6 +16,11 @@ from app.core.config import get_settings
 from app.core.errors import api_error
 
 settings = get_settings()
+logging.basicConfig(
+    level=getattr(logging, settings.log_level.upper(), logging.INFO),
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+logger = logging.getLogger("lumora.api")
 
 app = FastAPI(title=settings.app_name)
 
@@ -32,8 +40,24 @@ app.include_router(settings_router)
 app.include_router(sessions_router)
 
 
+@app.middleware("http")
+async def request_logging_middleware(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = (time.perf_counter() - start) * 1000
+    logger.info(
+        "request method=%s path=%s status=%s duration_ms=%.2f",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
+
+
 @app.exception_handler(HTTPException)
 def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    logger.warning("http_error path=%s status=%s", request.url.path, exc.status_code)
     if isinstance(exc.detail, dict) and "error" in exc.detail:
         return JSONResponse(status_code=exc.status_code, content=exc.detail)
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
@@ -41,6 +65,7 @@ def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse
 
 @app.exception_handler(RequestValidationError)
 def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    logger.warning("validation_error path=%s errors=%s", request.url.path, len(exc.errors()))
     errors = [
         {
             "loc": error.get("loc", []),
